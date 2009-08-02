@@ -845,6 +845,9 @@ class TokenStream
                         }
                     }
                     c = Token.DEC;
+                } else if (matchChar('>')) {
+                    // -> syntax sugar for functions
+                    c = Token.FUNCTION;
                 } else {
                     c = Token.SUB;
                 }
