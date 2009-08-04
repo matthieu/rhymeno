@@ -819,7 +819,11 @@ class TokenStream
                 }
 
             case '~':
-                return Token.BITNOT;
+                if (matchChar('>')) {
+                    return Token.FUNCTION_UNARY;
+                } else {
+                    return Token.BITNOT;
+                }
 
             case '+':
                 if (matchChar('=')) {

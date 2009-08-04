@@ -536,12 +536,12 @@ public class Parser
                 }
 
                 AstNode n;
-                if (tt == Token.FUNCTION) {
+                if (tt == Token.FUNCTION || tt == Token.FUNCTION_UNARY) {
                     consumeToken();
                     try {
                         n = function(calledByCompileFunction
                                      ? FunctionNode.FUNCTION_EXPRESSION
-                                     : FunctionNode.FUNCTION_STATEMENT);
+                                     : FunctionNode.FUNCTION_STATEMENT, tt == Token.FUNCTION_UNARY);
                     } catch (ParserException e) {
                         break;
                     }
@@ -609,8 +609,9 @@ public class Parser
                     break bodyLoop;
 
                   case Token.FUNCTION:
+                  case Token.FUNCTION_UNARY:
                     consumeToken();
-                    n = function(FunctionNode.FUNCTION_STATEMENT);
+                    n = function(FunctionNode.FUNCTION_STATEMENT, tt == Token.FUNCTION_UNARY);
                     break;
                   default:
                     n = statement();
@@ -700,7 +701,7 @@ public class Parser
         return n;
     }
 
-    private FunctionNode function(int type)
+    private FunctionNode function(int type, boolean unary)
         throws IOException
     {
         int syntheticType = type;
@@ -709,7 +710,7 @@ public class Parser
         Name name = null;
         AstNode memberExprNode = null;
 
-        if (matchToken(Token.NAME)) {
+        if (!unary && matchToken(Token.NAME)) {
             name = createNameNode(true, Token.NAME);
             if (!matchToken(Token.LP)) {
                 if (compilerEnv.isAllowMemberExprAsFunctionName()) {
@@ -728,7 +729,8 @@ public class Parser
                 // processed as anonymous function
                 memberExprNode = memberExpr(false);
             }
-            mustMatchToken(Token.LP, "msg.no.paren.parms");
+            if (!unary)
+                mustMatchToken(Token.LP, "msg.no.paren.parms");
         }
         int lpPos = currentToken == Token.LP ? ts.tokenBeg : -1;
 
@@ -760,7 +762,12 @@ public class Parser
 
         PerFunctionVariables savedVars = new PerFunctionVariables(fnNode);
         try {
-            parseFunctionParams(fnNode);
+            if (unary) {
+                fnNode.addParam(new Name(functionSourceStart, 1, "_"));
+                defineSymbol(Token.LP, "_");
+            } else {
+                parseFunctionParams(fnNode);
+            }
             fnNode.setBody(parseFunctionBody());
             fnNode.setEncodedSourceBounds(functionSourceStart, ts.tokenEnd);
             fnNode.setLength(ts.tokenEnd - functionSourceStart);
@@ -995,8 +1002,9 @@ public class Parser
               return pn;
 
           case Token.FUNCTION:
+          case Token.FUNCTION_UNARY:
               consumeToken();
-              return function(FunctionNode.FUNCTION_EXPRESSION_STATEMENT);
+              return function(FunctionNode.FUNCTION_EXPRESSION_STATEMENT, tt == Token.FUNCTION_UNARY);
 
           case Token.DEFAULT :
               pn = defaultXmlNamespace();
@@ -1919,7 +1927,7 @@ public class Parser
             addError(symDeclType == Token.CONST ? "msg.const.redecl" :
                      symDeclType == Token.LET ? "msg.let.redecl" :
                      symDeclType == Token.VAR ? "msg.var.redecl" :
-                     symDeclType == Token.FUNCTION ? "msg.fn.redecl" :
+                     symDeclType == Token.FUNCTION || symDeclType == Token.FUNCTION_UNARY ? "msg.fn.redecl" :
                      "msg.parm.redecl", name);
             return;
         }
@@ -1937,6 +1945,7 @@ public class Parser
           case Token.VAR:
           case Token.CONST:
           case Token.FUNCTION:
+          case Token.FUNCTION_UNARY:
               if (symbol != null) {
                   if (symDeclType == Token.VAR)
                       addStrictWarning("msg.var.redecl", name);
@@ -2710,7 +2719,8 @@ public class Parser
 
         switch(tt) {
           case Token.FUNCTION:
-              return function(FunctionNode.FUNCTION_EXPRESSION);
+          case Token.FUNCTION_UNARY:
+              return function(FunctionNode.FUNCTION_EXPRESSION, tt == Token.FUNCTION_UNARY);
 
           case Token.LB:
               return arrayLiteral();
@@ -3078,7 +3088,7 @@ public class Parser
                                                 boolean isGetter)
         throws IOException
     {
-        FunctionNode fn = function(FunctionNode.FUNCTION_EXPRESSION);
+        FunctionNode fn = function(FunctionNode.FUNCTION_EXPRESSION, false);
         // We've already parsed the function name, so fn should be anonymous.
         Name name = fn.getFunctionName();
         if (name != null && name.length() != 0) {

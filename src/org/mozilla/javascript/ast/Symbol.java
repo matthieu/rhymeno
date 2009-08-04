@@ -82,6 +82,7 @@ public class Symbol {
      */
     public void setDeclType(int declType) {
         if (!(declType == Token.FUNCTION
+              || declType == Token.FUNCTION_UNARY
               || declType == Token.LP
               || declType == Token.VAR
               || declType == Token.LET

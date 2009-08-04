@@ -199,6 +199,7 @@ public class Token
         DEC            = 106,
         DOT            = 107, // member operator (.)
         FUNCTION       = 108, // function keyword
+        FUNCTION_UNARY = 161, // unary ~> function keyword
         EXPORT         = 109, // export keyword
         IMPORT         = 110, // import keyword
         IF             = 111, // if keyword
@@ -262,7 +263,7 @@ public class Token
         WITHEXPR       = 158,
         DEBUGGER       = 159,
         COMMENT        = 160,
-        LAST_TOKEN     = 160;
+        LAST_TOKEN     = 161;
 
     /**
      * Returns a name for the token.  If Rhino is compiled with certain
@@ -394,6 +395,7 @@ public class Token
           case DEC:             return "DEC";
           case DOT:             return "DOT";
           case FUNCTION:        return "FUNCTION";
+          case FUNCTION_UNARY:  return "FUNCTION_UNARY";
           case EXPORT:          return "EXPORT";
           case IMPORT:          return "IMPORT";
           case IF:              return "IF";
