@@ -2114,12 +2114,7 @@ public final class IRFactory extends Parser
           case Token.TRUE:
             return ALWAYS_TRUE_BOOLEAN;
           case Token.NUMBER: {
-            double num = node.getDouble();
-            if (num == num && num != 0.0) {
-                return ALWAYS_TRUE_BOOLEAN;
-            } else {
-                return ALWAYS_FALSE_BOOLEAN;
-            }
+            return ALWAYS_TRUE_BOOLEAN;
           }
         }
         return 0;

@@ -2987,13 +2987,11 @@ switch (op) {
         } else if (x == Boolean.FALSE) {
             return false;
         } else if (x == UniqueTag.DOUBLE_MARK) {
-            double d = frame.sDbl[i];
-            return d == d && d != 0.0;
+            return true;
         } else if (x == null || x == Undefined.instance) {
             return false;
         } else if (x instanceof Number) {
-            double d = ((Number)x).doubleValue();
-            return (d == d && d != 0.0);
+            return true;
         } else if (x instanceof Boolean) {
             return ((Boolean)x).booleanValue();
         } else {

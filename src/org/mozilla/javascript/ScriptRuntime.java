@@ -315,10 +315,9 @@ public class ScriptRuntime {
             if (val == null || val == Undefined.instance)
                 return false;
             if (val instanceof String)
-                return ((String) val).length() != 0;
+                return true;
             if (val instanceof Number) {
-                double d = ((Number) val).doubleValue();
-                return (d == d && d != 0.0);
+                return true;
             }
             if (val instanceof Scriptable) {
                 if (val instanceof ScriptableObject &&
